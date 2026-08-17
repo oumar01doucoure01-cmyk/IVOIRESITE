@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoShop Admin - Panneau de Contrôle</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1F2937">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --secondary: #10B981;
+            --dark: #1F2937;
+            --light: #F9FAFB;
+            --gray: #6B7280;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .sidebar-menu .icon {
+            font-size: 1.3rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--dark);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .lang-switch-admin {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: white;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive {
+            color: var(--secondary);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .add-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+        }
+
+        th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tr {
+            border-bottom: 1px solid var(--light);
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-cancelled {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            transition: opacity 0.3s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.7;
+        }
+
+        .edit-btn {
+            background: var(--warning);
+            color: white;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .view-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            background: var(--dark);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">⚙️ EcoShop Admin</a>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" data-section="dashboard"><span class="icon">📊</span> <span data-i18n="dashboard">Tableau de bord</span></a></li>
+            <li><a href="#" data-section="products"><span class="icon">📦</span> <span data-i18n="products">Produits</span></a></li>
+            <li><a href="#" data-section="orders"><span class="icon">🛒</span> <span data-i18n="orders">Commandes</span></a></li>
+            <li><a href="#" data-section="customers"><span class="icon">👥</span> <span data-i18n="customers">Clients</span></a></li>
+            <li><a href="#" data-section="analytics"><span class="icon">📈</span> <span data-i18n="analytics">Analytiques</span></a></li>
+            <li><a href="#" data-section="settings"><span class="icon">⚙️</span> <span data-i18n="settings">Paramètres</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h1 class="page-title" data-i18n="dashboard">Tableau de bord</h1>
+            </div>
+            <div class="user-info">
+                <button class="lang-switch-admin" onclick="toggleLanguage()">EN</button>
+                <span>👤 Admin</span>
+                <button class="logout-btn" onclick="logout()" data-i18n="logout">Déconnexion</button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalSales">24,580€</div>
+                        <div class="stat-label" data-i18n="totalSales">Ventes Totales</div>
+                    </div>
+                    <div class="stat-icon">💰</div>
+                </div>
+                <div class="stat-change positive">↑ 12.5% vs mois dernier</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalOrders">1,245</div>
+                        <div class="stat-label" data-i18n="totalOrders">Commandes</div>
+                    </div>
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-change positive">↑ 8.3% vs mois dernier</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalCustomers">3,890</div>
+                        <div class="stat-label" data-i18n="totalCustomers">Clients</div>
+                    </div>
+                    <div class="stat-icon">👥</div>
+                </div>
+                <div class="stat-change positive">↑ 15.2% vs mois dernier</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalProducts">156</div>
+                        <div class="stat-label" data-i18n="totalProducts">Produits</div>
+                    </div>
+                    <div class="stat-change negative">↓ 3 produits en rupture</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2 class="table-title" data-i18n="recentOrders">Commandes Récentes</h2>
+                <button class="add-btn" onclick="showModal('order')">+ <span data-i18n="newOrder">Nouvelle Commande</span></button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th data-i18n="orderId">ID</th>
+                        <th data-i18n="customer">Client</th>
+                        <th data-i18n="date">Date</th>
+                        <th data-i18n="amount">Montant</th>
+                        <th data-i18n="status">Statut</th>
+                        <th data-i18n="actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable">
+                    <!-- Orders will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2 class="table-title" data-i18n="productList">Liste des Produits</h2>
+                <button class="add-btn" onclick="showModal('product')">+ <span data-i18n="newProduct">Nouveau Produit</span></button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th data-i18n="image">Image</th>
+                        <th data-i18n="name">Nom</th>
+                        <th data-i18n="category">Catégorie</th>
+                        <th data-i18n="price">Prix</th>
+                        <th data-i18n="stock">Stock</th>
+                        <th data-i18n="status">Statut</th>
+                        <th data-i18n="actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTable">
+                    <!-- Products will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="productModalTitle" data-i18n="addProduct">Ajouter un Produit</h3>
+                <button class="close-modal" onclick="closeModal('product')">✕</button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="productName">Nom du produit</label>
+                    <input type="text" class="form-input" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="category">Catégorie</label>
+                    <select class="form-select" id="productCategory" required>
+                        <option value="electronics">Électronique</option>
+                        <option value="clothing">Vêtements</option>
+                        <option value="home">Maison</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="price">Prix (€)</label>
+                    <input type="number" class="form-input" id="productPrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="stock">Stock</label>
+                    <input type="number" class="form-input" id="productStock" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="description">Description</label>
+                    <textarea class="form-textarea" id="productDescription"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" data-i18n="save">Enregistrer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="orderModalTitle" data-i18n="addOrder">Ajouter une Commande</h3>
+                <button class="close-modal" onclick="closeModal('order')">✕</button>
+            </div>
+            <form id="orderForm" onsubmit="saveOrder(event)">
+                <input type="hidden" id="orderId">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="customerName">Nom du client</label>
+                    <input type="text" class="form-input" id="orderCustomer" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="email">Email</label>
+                    <input type="email" class="form-input" id="orderEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="amount">Montant (€)</label>
+                    <input type="number" class="form-input" id="orderAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="status">Statut</label>
+                    <select class="form-select" id="orderStatus" required>
+                        <option value="pending">En attente</option>
+                        <option value="processing">En traitement</option>
+                        <option value="shipped">Expédié</option>
+                        <option value="delivered">Livré</option>
+                        <option value="cancelled">Annulé</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn" data-i18n="save">Enregistrer</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="/admin.js"></script>
+</body>
+</html>
