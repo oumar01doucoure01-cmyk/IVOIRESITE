@@ -1,0 +1,11 @@
+```
+# Dependencies
+node_modules/
+
+# Vite build artifacts
+node_modules/.vite/
+
+# Logs
+*.log
+server.log
+```
